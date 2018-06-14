@@ -7,6 +7,10 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
+
+var redis = require('redis');
+var client = redis.createClient(6379,"127.0.0.1");
+
 var app = express();
 
 // view engine setup
@@ -36,6 +40,10 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render('error');
+});
+
+app.listen(8090,function(){
+  console.log('port number 8090 is started!');
 });
 
 module.exports = app;
