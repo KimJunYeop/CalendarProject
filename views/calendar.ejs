@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- link css -->
+    <!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
+    <link rel="stylesheet" href="/stylesheets/calendarStyle.css" />
+    <!-- <script rel="text/javascript" src="\jquery-ui-1.12.1\jquery-ui.css"></script> -->
+    <!-- <script rel="text/javascript" src="\jquery-ui-1.12.1\jquery-ui.min.js"></script> -->
+    <!-- JQeury -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
+
+    <!-- w3css -->
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!-- script -->
+    <script src="/javascripts/calendar.js"></script>
+</head>
+
+<body>
+    <div class="row">
+        <div class="w3-col m6 13 calendar">
+            <div class="month">
+                <ul>
+                    <li class="prev">&#10094;</li>
+                    <li class="next">&#10095;</li>
+                    <li>August
+                        <br>
+                        <span style="font-size:18px">2017</span>
+                    </li>
+                </ul>
+            </div>
+            <ul class="weekdays">
+                <li>일</li>
+                <li>월</li>
+                <li>화</li>
+                <li>수</li>
+                <li>목</li>
+                <li>금</li>
+                <li>토</li>
+            </ul>
+
+            <ul class="days">
+                <% for(var i=1; i < 31 ; i++) { %>
+                    <li>
+                        <%= i %>
+                    </li>
+                    <% if(i==10) {%>
+                        <li>
+                            <span class="active">
+                                <%= i %>
+                            </span>
+                        </li>
+                    <% } %>
+                <% } %>
+            </ul>
+        </div>
+        <div class="w3-col m5 13 calendar">
+            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
+            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
+            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
+        </div>
+    </div>
+</body>
+
+</html>
