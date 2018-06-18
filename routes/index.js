@@ -20,8 +20,6 @@ router.get('/', function (req, res, next) {
 
 
 router.get('/calendar',function(req,res){
-  console.log('calendar project started');
-
   res.render('calendar');
 })
 

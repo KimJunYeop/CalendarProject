@@ -23,42 +23,38 @@
 </head>
 
 <body>
+
+    <div id="dialog-form" title="새로운 일정을 등록하세요.">
+        <form>
+            <fieldset>
+                <label for="subject">제목</label>
+                <input type="text" name="subject" id="subject" value="">
+
+                <label for="date">날짜</label>
+                <input type="text" name="date" id="date" value="">
+
+                <label for="description">상세내용</label>
+                <textarea name="description" id="description" ></textarea>
+
+                <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+            </fieldset>
+        </form>
+    </div>
+
     <div class="row">
         <div class="w3-col m6 13 calendar">
-            <div class="month">
+            <div id="monthtitle">
                 <ul>
                     <li class="prev">&#10094;</li>
                     <li class="next">&#10095;</li>
-                    <li>August
-                        <br>
-                        <span style="font-size:18px">2017</span>
-                    </li>
+                    <span id="year" style="font-size:18px"></span>
+                    </br>
+                    <li id="month"></li>
                 </ul>
             </div>
-            <ul class="weekdays">
-                <li>일</li>
-                <li>월</li>
-                <li>화</li>
-                <li>수</li>
-                <li>목</li>
-                <li>금</li>
-                <li>토</li>
-            </ul>
-
-            <ul class="days">
-                <% for(var i=1; i < 31 ; i++) { %>
-                    <li>
-                        <%= i %>
-                    </li>
-                    <% if(i==10) {%>
-                        <li>
-                            <span class="active">
-                                <%= i %>
-                            </span>
-                        </li>
-                    <% } %>
-                <% } %>
-            </ul>
+            <ul id="weekdays"></ul>
+            <ul id="days"></ul>
         </div>
         <div class="w3-col m5 13 calendar">
             <i class="fa fa-plane" style="font-size:36px;"></i> 출장
@@ -66,6 +62,6 @@
             <i class="fa fa-plane" style="font-size:36px;"></i> 출장
         </div>
     </div>
-</body>
 
+</body>
 </html>
