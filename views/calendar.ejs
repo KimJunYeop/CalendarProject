@@ -28,14 +28,18 @@
         <form>
             <fieldset>
                 <label for="subject">제목</label>
-                <input type="text" name="subject" id="subject" value="">
-
-                <label for="date">날짜</label>
-                <input type="text" name="date" id="date" value="">
-
+                <input type="text" name="subject" id="subject" value="신입사원간담회">
+            </br>
+                <label for="dateStart">시작</label>
+                <input type="text" name="dateStart" id="dateStart" value="0612">
+                <input type="text" name="dateStartTime" id="dateStartTime">
+            </br>
+                <label for="dateEnd">종료</label>
+                <input type="text" name="dateEnd" id="dateEnd" value="0612">
+                <input type="text" name="dateEndTime" id="dateEndTime">
+            </br>
                 <label for="description">상세내용</label>
-                <textarea name="description" id="description" ></textarea>
-
+                <textarea name="description" id="description" >신인사원간담회가 진행.</textarea>
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->
                 <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
             </fieldset>
