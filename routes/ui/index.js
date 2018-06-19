@@ -36,19 +36,25 @@ router.post('/api/calendar', function (req, res) {
 			if (reply) {
 				//이미 data가있다면 풀어헤쳐서 array에 집어넣는다.
 				client.hget("calendar", dateStart, function (err, result) {
+          if(err) reject(err);
 					var resultArray = JSON.parse(result);
 					for(var i = 0 ; i < resultArray.length; i++) {
 						multiInputData.push(resultArray[i]);
 					}
 					// multiInputData.push(JSON.parse(result));
 					multiInputData.push(inputData);
-					client.hset('calendar',dateStart,JSON.stringify(multiInputData));
+					client.hset('calendar',dateStart,JSON.stringify(multiInputData),function(err,reply){
+            if(err) reject(err);
+            resolve();
+          });
 				});
 			} else {
 				//data가 없다면 그냥 하나만 저장한다.
 				multiInputData.push(inputData);
-				client.hset("calendar", dateStart, JSON.stringify(multiInputData));
-				resolve();
+				client.hset("calendar", dateStart, JSON.stringify(multiInputData),function(err,reply){
+          if(err) reject(err);
+			  	resolve();
+        });
 			}
 		})
 	}).then(function () {

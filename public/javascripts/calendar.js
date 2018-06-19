@@ -113,8 +113,6 @@ function bind() {
 
             fnAjaxPost();
             init();
-            fnGetAppointment();
-
         }
     });
     // $("#days li button").unbind("click",bind("click",function(){
@@ -167,7 +165,6 @@ function fnAjaxPost(){
            console.log(err);
        }
     });
-    console.log(data);
 }   
 
 /*
