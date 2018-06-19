@@ -74,6 +74,13 @@ body {font-family: Verdana, sans-serif;}
     font-size:13px;
     height : 100px;
     color: #777;
+    border-style: solid;
+    border-width: 1px;
+}
+
+#days li button {
+    display:block;
+    float: left;
 }
 
 /* Highlight the "current" day */
@@ -81,4 +88,13 @@ body {font-family: Verdana, sans-serif;}
     padding: 5px;
     background: #1abc9c;
     color: white !important
+}
+
+#wrapper {
+    display: table;
+}
+
+#cell {
+    display: table-cell; 
+    vertical-align: middle;
 }

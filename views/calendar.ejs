@@ -23,23 +23,22 @@
 </head>
 
 <body>
-
     <div id="dialog-form" title="새로운 일정을 등록하세요.">
         <form>
             <fieldset>
                 <label for="subject">제목</label>
-                <input type="text" name="subject" id="subject" value="신입사원간담회">
+                <input type="text" name="subject" id="subject">
             </br>
                 <label for="dateStart">시작</label>
-                <input type="text" name="dateStart" id="dateStart" value="0612">
+                <input type="text" name="dateStart" id="dateStart">
                 <input type="text" name="dateStartTime" id="dateStartTime">
             </br>
                 <label for="dateEnd">종료</label>
-                <input type="text" name="dateEnd" id="dateEnd" value="0612">
+                <input type="text" name="dateEnd" id="dateEnd">
                 <input type="text" name="dateEndTime" id="dateEndTime">
             </br>
                 <label for="description">상세내용</label>
-                <textarea name="description" id="description" >신인사원간담회가 진행.</textarea>
+                <textarea name="description" id="description" ></textarea>
                 <!-- Allow form submission with keyboard without duplicating the dialog button -->
                 <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
             </fieldset>
@@ -61,11 +60,16 @@
             <ul id="days"></ul>
         </div>
         <div class="w3-col m5 13 calendar">
-            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
-            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
-            <i class="fa fa-plane" style="font-size:36px;"></i> 출장
+            <div class="w3-container" style="margin-top:250px; margin-left:100px;";>
+                <h2 id="dragable" class="w3-text-indigo draggable"><i class="fa fa-car fa-fw w3-margin-right"></i><span class="w3-tag w3-indigo w3-round">출장</span></h2>
+                <h2 class="w3-text-pink draggable"><i class="fa fa-weixin fa-fw w3-margin-right"></i><span class="w3-tag w3-pink w3-round">회의</span></h2>
+                <h2 class="w3-text-blue-grey draggable"><i class="fa fa-train fa-fw w3-margin-right"></i><span class="w3-tag w3-blue-grey w3-round">여행</span></h2>
+                <h2 class="w3-text-deep-orange draggable"><i class="fa fa-handshake-o fa-fw w3-margin-right"></i><span class="w3-tag w3-deep-orange w3-round">계약</span></h2>
+            </div>
+            <div class="ui-widget-header droppable">
+                <p>Drop me here</p>
+            </div>
         </div>
     </div>
-
 </body>
 </html>

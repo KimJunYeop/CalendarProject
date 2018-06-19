@@ -5,29 +5,30 @@ var _day = (_d.getDate()).toString();
 
 var _monthdays = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 var _weekdays = new Array('일', '월', '화', '수', '목', '금', '토');
+var _dayOfWeekIndex = new Date(_year,_month-1,1).getDay();
 
 var _dialog;
 var _form;
 
 $(document).ready(function () {
     _dialog = $( "#dialog-form" ).dialog({
-    autoOpen: false,
-    height: 400,
-    width: 350,
-    modal: true,
-    buttons: {
-        OK: function() {
-            //TODO :: form 정합성 검사해야함.
-            fnAjaxPost();
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            OK: function() {
+                //TODO :: form 정합성 검사해야함.
+                fnAjaxPost();
+                init();
+                _dialog.dialog("close");
+            },
+            Cancel: function() {
             _dialog.dialog("close");
-        },
-        Cancel: function() {
-        _dialog.dialog("close");
-        //TODO :: form 초기화 시켜줘야함.
+            //TODO :: form 초기화 시켜줘야함.
+            }
         }
-    }
     });
-
     // page UI init
     init();
 });
@@ -83,16 +84,42 @@ function bind() {
     //날짜 클릭시 event.
     $("#days li").unbind("click").bind("click",function() {
         // console.log($("li").index(this));
-        var dayOfWeekIndex = new Date(_year,_month-1,1).getDay();
+        // var dayOfWeekIndex = new Date(_year,_month-1,1).getDay();
         var monthValue = fnLeadingZeros(_month,2).toString();
-        var daysValue = fnLeadingZeros(($(this).index()-(dayOfWeekIndex-1)),2).toString();
+        var daysValue = fnLeadingZeros(($(this).index()-(_dayOfWeekIndex-1)),2).toString();
         var dateValue = _year + monthValue + daysValue;
 
         $('#dateStart').val(dateValue);
         $('#dateEnd').val(dateValue);
 
         _dialog.dialog("open");
+    })
+
+    $( ".draggable" ).draggable({ 
+        snap: "li" ,
+        helper: "clone",
+        revert: "valid"
     });
+
+    $( ".droppable" ).droppable({ 
+        drop: function( event, ui ) {
+            var monthValue = fnLeadingZeros(_month,2).toString();
+            var daysValue = fnLeadingZeros(($(this).index()-(_dayOfWeekIndex-1)),2).toString();
+            var dateValue = _year + monthValue + daysValue;
+            console.log('###');
+            console.log(ui.draggable[0]);
+            $('#dateStart').val(dateValue);
+            $('#dateEnd').val(dateValue);
+            $('#subject').val('출장');
+            $('#decription').val('출장');
+
+            fnAjaxPost();
+            init();
+        }
+    });
+    // $("#days li button").unbind("click",bind("click",function(){
+    //     event.stopPropagation();
+    // }));
 
     _form = _dialog.find( "form" ).on( "submit", function( event ) {
         event.preventDefault();
@@ -102,20 +129,15 @@ function bind() {
 
 //dayOfWeek 0 = 일요일 6 = 토요일
 function fnDaysPrint(input_month) {
- //달력에 날짜표시
-    //여기에서 목록값의 date를 가져온다. 만약 일치 있다면..? 좋아요 시작해요.
-
     fnGetAppointment();
-
-
     $("#days").html(function () {
         var str = fnGetFirstDay();
         for(var i = 1 ; i < _monthdays[input_month-1]+1 ; i++) {
             //active 
             if(i == _day && (input_month == (_month+1)) && (_year == _d.getFullYear())) {
-                str += '<li><span class="active">' + i + '</span></li>';
+                str += '<li class="droppable"><span class="active">' + i + '</span></li>';
             } else {
-                str += '<li>' + i +'</li>'
+                str += '<li class="droppable"><p>' + i +'</p></li>'
             }
         }
         return str;
@@ -125,9 +147,8 @@ function fnDaysPrint(input_month) {
 //1일이 무슨 요일인지 설정.
 function fnGetFirstDay() {
     var result = '';
-    var dayOfWeek = new Date(_year,_month-1,1).getDay();
-    for(var i = 0 ; i < dayOfWeek ; i++) {
-        result += '<li>&nbsp</li>'
+    for(var i = 0 ; i < _dayOfWeekIndex ; i++) {
+        result += '<li><p>&nbsp</p></li>'
     }   
     return result;
 }
@@ -149,7 +170,9 @@ function fnAjaxPost(){
     console.log(data);
 }   
 
-
+/*
+ * 자릿수 맞춰주기
+ */
 function fnLeadingZeros(n, digits) {
     var zero = '';
     n = n.toString();
@@ -172,11 +195,30 @@ function fnGetAppointment(){
         type: "post",
         data: data,
         success: function(result){
+            if(result.resCode == 'false'){
+                return;
+            }
             console.log(result);
+
+            for(var i = 0 ; i < result.appointment.length ; i ++) {
+                var appointDate = result.appointment[i].dateStart;
+                var appointSubject = result.appointment[i].subject;
+                fnInsertBtn(appointDate,appointSubject);
+            }
         },
         error: function(err) {
             console.log(err);
         }
     });
-
 }
+
+//Calendar에 받은 date를 기반으로 li를 찾아 button을 삽입한다.
+function fnInsertBtn(appointDate,appointSubject) { 
+    var date = appointDate.substr(6,2);
+    var dayOfWeekIndex = parseInt(_dayOfWeekIndex);
+    var liIndex = dayOfWeekIndex + parseInt(date);
+
+    var html = '';
+    html += '<button>' + appointSubject + '</button>';
+    $("#days li:nth-child(" + liIndex + ")").append(html);
+}   
