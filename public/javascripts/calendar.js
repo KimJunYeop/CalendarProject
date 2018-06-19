@@ -106,15 +106,15 @@ function bind() {
             var monthValue = fnLeadingZeros(_month,2).toString();
             var daysValue = fnLeadingZeros(($(this).index()-(_dayOfWeekIndex-1)),2).toString();
             var dateValue = _year + monthValue + daysValue;
-            console.log('###');
-            console.log(ui.draggable[0]);
             $('#dateStart').val(dateValue);
             $('#dateEnd').val(dateValue);
-            $('#subject').val('출장');
-            $('#decription').val('출장');
+            $('#subject').val(ui.draggable[0].textContent);
+            $('#decription').val(ui.draggable[0].textContent);
 
             fnAjaxPost();
             init();
+            fnGetAppointment();
+
         }
     });
     // $("#days li button").unbind("click",bind("click",function(){
@@ -199,11 +199,13 @@ function fnGetAppointment(){
                 return;
             }
             console.log(result);
-
-            for(var i = 0 ; i < result.appointment.length ; i ++) {
-                var appointDate = result.appointment[i].dateStart;
-                var appointSubject = result.appointment[i].subject;
-                fnInsertBtn(appointDate,appointSubject);
+            for(var j = 0 ; j < result.appointment.length ; j++) {
+                for(var i = 0 ; i < result.appointment[j].length ; i ++) {
+                    var appointDate = result.appointment[j][i].dateStart;
+                    var appointSubject = result.appointment[j][i].subject;
+                    console.log(appointDate);
+                    fnInsertBtn(appointDate,appointSubject);
+                }
             }
         },
         error: function(err) {
