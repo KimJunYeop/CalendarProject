@@ -28,6 +28,7 @@ router.post('/api/calendar', function (req, res) {
 	var result = {
 		resCode: "false",
 	}
+	inputData.id = 1;
 
 	var multiInputData = new Array();
 	new Promise(function (resolve, reject) {
@@ -41,6 +42,7 @@ router.post('/api/calendar', function (req, res) {
 					for(var i = 0 ; i < resultArray.length; i++) {
 						multiInputData.push(resultArray[i]);
 					}
+					inputData.id = resultArray.length + 1;
 					// multiInputData.push(JSON.parse(result));
 					multiInputData.push(inputData);
 					client.hset('calendar',dateStart,JSON.stringify(multiInputData),function(err,reply){
@@ -118,8 +120,6 @@ router.post('/api/calendar/specificDate', function (req, res) {
   new Promise(function (resolve,reject){
     client.hget('calendar',dateValue,function(err,reply){
       if(err) reject(err);
-      console.log('##');
-      console.log(reply);
       if(reply == null) { 
         _result.resCode = "empty";
       } else {
@@ -127,9 +127,7 @@ router.post('/api/calendar/specificDate', function (req, res) {
         _result.replyData = reply;
       }
       resolve();
-
     });
-
   }).then(function(){
     res.send(_result);
   }).catch(function(err){
@@ -138,6 +136,37 @@ router.post('/api/calendar/specificDate', function (req, res) {
   })
 
   console.log(req.body);
+});
+
+//id를 이용한 특정 data 도출
+router.post('/api/calendar/getValueById',function(req,res){ 
+	console.log('/api/calendar/getValueById');
+	console.log(req.body);
+	var date = req.body.date;
+	var id = req.body.id;
+
+	var _result = {
+		resCode : "false"
+	};
+
+	new Promise(function (resolve,reject) {
+		client.hget('calendar',date,function(err,reply){
+			if(err) reject(err);
+			for(var i = 0 ; i < reply.length ; i ++) { 
+				console.log('$$$ : ' + reply[i].id);
+				if(reply[i].id == id) {
+					console.log('###');
+					console.log(reply[i].subject);
+				}
+			}			
+
+		})
+	}).then(function(){
+		res.send(_result);
+	}).catch(function(err){
+		console.log(err);
+		return;
+	})
 });
 
 module.exports = router;

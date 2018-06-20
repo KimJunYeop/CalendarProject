@@ -36,8 +36,14 @@ function dialoginit() {
         height: 500,
         width : 500,
         buttons:{
-            OK:function(){
+            닫기:function(){
                 $(this).dialog('close');
+            },
+            삭제:function() {
+                
+            },
+            수정:function() {
+
             }
         }
     });
@@ -53,6 +59,7 @@ function dialoginit() {
                 fnAjaxPost();
                 //table init 실행.
                 fnDialogInit(dateValue);
+                $('#dialog-form')[0].reset();
                 _dialog.dialog("close");
             },
             Cancel: function() {
@@ -67,8 +74,6 @@ function dialoginit() {
         height: 400,
         width : 500
     });
-
-    
 }
 
 function calendarinit() {
@@ -161,9 +166,7 @@ function bind() {
             $('#dateEnd').val(dateValue);
             $('#subject').val(ui.draggable[0].textContent);
             $('#decription').val(ui.draggable[0].textContent);
-
             fnAjaxPost();
-            // init();
         }
     });
 
@@ -211,8 +214,7 @@ function fnAjaxPost(){
        data: data,
        type: "post",
        success: function(result){ 
-        //    console.log(result);
-        //    console.log('success!');
+        $('#dialog-form-inner')[0].reset();
        },
        error: function(err){ 
            console.log(err);
@@ -316,7 +318,7 @@ function fnTableInit(resCode,replyData){
             str += '<td>' + myArray[i].subject + '</td>'
             str += '<td>' + myArray[i].dateStart + '</td>'
             str += '<td>' + myArray[i].dateEnd + '</td>'
-            str += "<td id='detaildata' style='display:none'>"+ JSON.stringify(myArray[i]) + "</td>"
+            str += "<td style='display:none'>"+ JSON.stringify(myArray[i].id) + "</td>"
             str += '</tr>'
         }
         str += '</table>';
@@ -330,31 +332,63 @@ function insertbtnbind(){
         _dialog.dialog("open");
     })
 
-    $('td').unbind("click").bind("click",function(){
-        var detailDisplay = JSON.parse($('#detaildata').text());
-        console.log(detailDisplay);
+    $('#dialog-list td').unbind("click").bind("click",function(){
+        //TODO :: data를 가져와야한다.
+        // console.log($(this).parent()["0"].childNodes[3]);
+        var id = $(this).siblings()[2].innerHTML;
+        var date = $(this).parent()["0"].childNodes[1].innerHTML;
+        fnGetValueUsingId(date,id);
+
         var html ="";
+        html += "<br><label>일정 제목</label>"
+        html += "<input class='w3-input' type='text'>";
+
         html += "<div class='w3-row'>";
-        html += "<div class='w3-col m5'>";
-        html += "<label class='w3-text-grey'>Name</label>";
-        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
-        html += "</div>";
-        html += "<div class='w3-col m5 w3-right'>";
-        html += "<label class='w3-text-grey w3-col m6'>Name</label>";
-        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
-        html += "</div>";
+        html +=     "<div class='w3-col m5'>";
+        html +=         "<br><label>시작 일자</label>"
+        html +=         "<input class='w3-input' type='text'>";
+        html +=     "</div>";
+        html +=     "<div class='w3-col m5 w3-right'>";
+        html +=         "<br><label>종료 일자</label>"
+        html +=         "<input class='w3-input' type='text'>";
+        html +=     "</div>"
         html += "</div>"
+
         html += "<div class='w3-row'>";
-        html += "<div class='w3-col m5'>";
-        html += "<label class='w3-text-grey '>Name</label>";
-        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
-        html += "</div>";
-        html += "<div class='w3-col m5 w3-right'>";
-        html += "<label class='w3-text-grey w3-col m6'>Name</label>";
-        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
-        html += "</div>";
+        html +=     "<div class='w3-col m5'>";
+        html +=         "<br><label>시작 시간</label>"
+        html +=         "<input class='w3-input' type='text'>";
+        html +=     "</div>";
+        html +=     "<div class='w3-col m5 w3-right'>";
+        html +=         "<br><label>종료 시간</label>"
+        html +=         "<input class='w3-input' type='text'>";
+        html +=     "</div>"
         html += "</div>"
+        
+        html +="<br><label>상세 내용</label>"
+        html +="<p><textarea class='w3-input'></textarea></p>";
+
         $('#dialog-detail').html(html);
         _dialogDetail.dialog("open");
     })
+}
+
+function fnGetValueUsingId(date,id) {
+    var data = {
+        date : date,
+        id : id
+    }
+
+    $.ajax({
+        url: '/api/calendar/getValueById',
+        type: "post",
+        data: data,
+        success: function(result){
+
+            // fnTableInit(result.resCode,result.replyData);
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
 }
