@@ -83,9 +83,7 @@ router.post('/api/calendar/appointment', function (req, res) {
 	new Promise(function (resolve, reject) {
 		client.hkeys("calendar", function (err, replies) {
 			if (err) reject(err)
-			console.log(replies);
 			replies.forEach(function (reply, i) {
-				console.log(reply);
 				client.hget("calendar", reply, function (err, result) {
 					if (err) reject(err)
 					var parseResult = JSON.parse(result);
@@ -107,6 +105,39 @@ router.post('/api/calendar/appointment', function (req, res) {
 		res.send(_result);
 		return;
 	});
+});
+
+//특정날짜 data조회
+router.post('/api/calendar/specificDate', function (req, res) {
+  console.log('/api/calendar/specificDate');
+  var dateValue = req.body.startDate;
+  var _result = {
+    resCode : "false"
+  }
+
+  new Promise(function (resolve,reject){
+    client.hget('calendar',dateValue,function(err,reply){
+      if(err) reject(err);
+      console.log('##');
+      console.log(reply);
+      if(reply == null) { 
+        _result.resCode = "empty";
+      } else {
+        _result.resCode = "success";
+        _result.replyData = reply;
+      }
+      resolve();
+
+    });
+
+  }).then(function(){
+    res.send(_result);
+  }).catch(function(err){
+    console.log(err);
+    return;
+  })
+
+  console.log(req.body);
 });
 
 module.exports = router;

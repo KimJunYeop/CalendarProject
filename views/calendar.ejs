@@ -5,21 +5,23 @@
     <!-- link css -->
     <!-- <link rel='stylesheet' href='/stylesheets/style.css' /> -->
     <link rel="stylesheet" href="/stylesheets/calendarStyle.css" />
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.css">
     <!-- <script rel="text/javascript" src="\jquery-ui-1.12.1\jquery-ui.css"></script> -->
     <!-- <script rel="text/javascript" src="\jquery-ui-1.12.1\jquery-ui.min.js"></script> -->
     <!-- JQeury -->
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.8.18/themes/base/jquery-ui.css" type="text/css" />
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
     <script src="http://code.jquery.com/ui/1.8.18/jquery-ui.min.js"></script>
-
     <!-- w3css -->
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
 
     <!-- font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/timepicker/1.3.5/jquery.timepicker.min.js"></script>
 
     <!-- script -->
     <script src="/javascripts/calendar.js"></script>
+    
 </head>
 
 <body>
@@ -30,12 +32,12 @@
                 <input type="text" name="subject" id="subject">
             </br>
                 <label for="dateStart">시작</label>
-                <input type="text" name="dateStart" id="dateStart">
-                <input type="text" name="dateStartTime" id="dateStartTime">
+                <input class="datePickSelect" type="text" name="dateStart" id="dateStart">
+                <input class="timepicker" type="text" name="dateStartTime" id="dateStartTime">
             </br>
                 <label for="dateEnd">종료</label>
-                <input type="text" name="dateEnd" id="dateEnd">
-                <input type="text" name="dateEndTime" id="dateEndTime">
+                <input class="datePickSelect" type="text" name="dateEnd" id="dateEnd">
+                <input class="timepicker" type="text" name="dateEndTime" id="dateEndTime">
             </br>
                 <label for="description">상세내용</label>
                 <textarea name="description" id="description" ></textarea>
@@ -44,7 +46,10 @@
             </fieldset>
         </form>
     </div>
-
+    <div id="dialog-list" title="일정 목록">
+    </div>
+    <div id="dialog-detail" title="일정 상세">
+    </div>
     <div class="row">
         <div class="w3-col m6 13 calendar">
             <div id="monthtitle">
@@ -65,9 +70,6 @@
                 <h2 class="w3-text-pink draggable"><i class="fa fa-weixin fa-fw w3-margin-right"></i><span class="w3-tag w3-pink w3-round">회의</span></h2>
                 <h2 class="w3-text-blue-grey draggable"><i class="fa fa-train fa-fw w3-margin-right"></i><span class="w3-tag w3-blue-grey w3-round">여행</span></h2>
                 <h2 class="w3-text-deep-orange draggable"><i class="fa fa-handshake-o fa-fw w3-margin-right"></i><span class="w3-tag w3-deep-orange w3-round">계약</span></h2>
-            </div>
-            <div class="ui-widget-header droppable">
-                <p>Drop me here</p>
             </div>
         </div>
     </div>

@@ -7,20 +7,52 @@ var _monthdays = new Array(31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 var _weekdays = new Array('일', '월', '화', '수', '목', '금', '토');
 var _dayOfWeekIndex = new Date(_year,_month-1,1).getDay();
 
+var _dialogList;
 var _dialog;
-var _form;
+var _dialogDetail;
+var _dialogForm;
+
+var _detailData;
+
+//TODO :: 테이블 시작시간 th 추가 및 시작시간으로 정렬
 
 $(document).ready(function () {
+    // page UI init
+    
+    init();
+});
+
+
+function init() {
+    dialoginit();
+    calendarinit();
+    bind();
+}
+
+function dialoginit() {
+    _dialogDetail = $("#dialog-detail").dialog({
+        modal: true,
+        autoOpen: false,
+        height: 500,
+        width : 500,
+        buttons:{
+            OK:function(){
+                $(this).dialog('close');
+            }
+        }
+    });
+
     _dialog = $( "#dialog-form" ).dialog({
         autoOpen: false,
         height: 400,
         width: 350,
-        modal: true,
         buttons: {
             OK: function() {
                 //TODO :: form 정합성 검사해야함.
+                var dateValue = $('#dateStart').val();
                 fnAjaxPost();
-                init();
+                //table init 실행.
+                fnDialogInit(dateValue);
                 _dialog.dialog("close");
             },
             Cancel: function() {
@@ -29,13 +61,14 @@ $(document).ready(function () {
             }
         }
     });
-    // page UI init
-    init();
-});
 
-function init() {
-    calendarinit();
-    bind();
+    _dialogList = $("#dialog-list").dialog({
+        autoOpen: false,
+        height: 400,
+        width : 500
+    });
+
+    
 }
 
 function calendarinit() {
@@ -54,10 +87,25 @@ function calendarinit() {
     if(_year%4 == 0 && _year % 100 !==0 || _year % 400 == 0){
         _monthdays[1] = 29;
     }
+
     fnDaysPrint(_month);
 
-    $("#dateStartTime").val("17:00");
-    $("#dateEndTime").val("18:00");
+    // $("#dateStartTime").val("17:00");
+    // $("#dateEndTime").val("18:00");
+    $('.timepicker').timepicker({
+        timeFormat: 'H:mm',
+        interval: 60,
+        startTime: '00:00',
+        defaultTime: '17:00',
+        dynamic: false,
+        scrollbar: true,
+        zindex: 2000
+    });
+
+    $(".datePickSelect").datepicker();
+    $(".datePickSelect").datepicker("option", "dateFormat","yymmdd");
+
+    $("#dateEndTime").val('18:00');
 }
 
 function bind() {
@@ -92,7 +140,10 @@ function bind() {
         $('#dateStart').val(dateValue);
         $('#dateEnd').val(dateValue);
 
-        _dialog.dialog("open");
+        //TODO: _dialog open 시켜주기.
+        // _dialog.dialog("open");
+        fnDialogInit(dateValue);
+        _dialogList.dialog("open");
     })
 
     $( ".draggable" ).draggable({ 
@@ -112,14 +163,16 @@ function bind() {
             $('#decription').val(ui.draggable[0].textContent);
 
             fnAjaxPost();
-            init();
+            // init();
         }
     });
-    // $("#days li button").unbind("click",bind("click",function(){
+
+     // $("#days li button").unbind("click",bind("click",function(){
     //     event.stopPropagation();
     // }));
 
-    _form = _dialog.find( "form" ).on( "submit", function( event ) {
+
+    _dialogForm = _dialog.find( "form" ).on( "submit", function( event ) {
         event.preventDefault();
         fnAjaxPost();
     });
@@ -158,13 +211,14 @@ function fnAjaxPost(){
        data: data,
        type: "post",
        success: function(result){ 
-           console.log(result);
-           console.log('success!');
+        //    console.log(result);
+        //    console.log('success!');
        },
        error: function(err){ 
            console.log(err);
        }
     });
+    init();
 }   
 
 /*
@@ -195,12 +249,11 @@ function fnGetAppointment(){
             if(result.resCode == 'false'){
                 return;
             }
-            console.log(result);
+            // console.log(result);
             for(var j = 0 ; j < result.appointment.length ; j++) {
                 for(var i = 0 ; i < result.appointment[j].length ; i ++) {
                     var appointDate = result.appointment[j][i].dateStart;
                     var appointSubject = result.appointment[j][i].subject;
-                    console.log(appointDate);
                     fnInsertBtn(appointDate,appointSubject);
                 }
             }
@@ -221,3 +274,87 @@ function fnInsertBtn(appointDate,appointSubject) {
     html += '<button>' + appointSubject + '</button>';
     $("#days li:nth-child(" + liIndex + ")").append(html);
 }   
+
+
+function fnDialogInit(dateValue) {
+    var data = {
+        "startDate": dateValue
+    };
+
+    $.ajax({
+        url: '/api/calendar/specificDate',
+        type: "post",
+        data: data,
+        success: function(result){
+            fnTableInit(result.resCode,result.replyData);
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    });
+}
+
+function fnTableInit(resCode,replyData){
+    var insertButton = '<button>추가</button>';
+    if(resCode == 'empty') {
+        var str = insertButton
+                + "<p>데이터가 없습니다.</p>"
+                + "<p>data를 추가해주세요!</p>";
+        $("#dialog-list").html(str);                
+    } else if(resCode == 'success') {
+        var str = insertButton +'<table>'
+                        + '<tr>'
+                            + '<th>일정이름</th>'
+                            + '<th>시작일자</th>'
+                            + '<th>종료일자</th>'
+                        +'</tr>';
+        var myArray = new Array();
+        myArray = JSON.parse(replyData);
+        _detailData = myArray;
+        for(var i = 0 ; i < myArray.length ; i++) {
+            str += '<tr>'
+            str += '<td>' + myArray[i].subject + '</td>'
+            str += '<td>' + myArray[i].dateStart + '</td>'
+            str += '<td>' + myArray[i].dateEnd + '</td>'
+            str += "<td id='detaildata' style='display:none'>"+ JSON.stringify(myArray[i]) + "</td>"
+            str += '</tr>'
+        }
+        str += '</table>';
+        $("#dialog-list").html(str);    
+    } else {};
+    insertbtnbind();
+}
+
+function insertbtnbind(){
+    $("#dialog-list button").unbind("click").bind("click",function(){
+        _dialog.dialog("open");
+    })
+
+    $('td').unbind("click").bind("click",function(){
+        var detailDisplay = JSON.parse($('#detaildata').text());
+        console.log(detailDisplay);
+        var html ="";
+        html += "<div class='w3-row'>";
+        html += "<div class='w3-col m5'>";
+        html += "<label class='w3-text-grey'>Name</label>";
+        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
+        html += "</div>";
+        html += "<div class='w3-col m5 w3-right'>";
+        html += "<label class='w3-text-grey w3-col m6'>Name</label>";
+        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
+        html += "</div>";
+        html += "</div>"
+        html += "<div class='w3-row'>";
+        html += "<div class='w3-col m5'>";
+        html += "<label class='w3-text-grey '>Name</label>";
+        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
+        html += "</div>";
+        html += "<div class='w3-col m5 w3-right'>";
+        html += "<label class='w3-text-grey w3-col m6'>Name</label>";
+        html += "<div class='w3-panel w3-leftbar w3-pale-yellow w3-border-yellow'>123</div>";
+        html += "</div>";
+        html += "</div>"
+        $('#dialog-detail').html(html);
+        _dialogDetail.dialog("open");
+    })
+}
