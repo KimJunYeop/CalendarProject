@@ -152,14 +152,14 @@ router.post('/api/calendar/getValueById',function(req,res){
 	new Promise(function (resolve,reject) {
 		client.hget('calendar',date,function(err,reply){
 			if(err) reject(err);
-			for(var i = 0 ; i < reply.length ; i ++) { 
-				console.log('$$$ : ' + reply[i].id);
-				if(reply[i].id == id) {
-					console.log('###');
-					console.log(reply[i].subject);
+			var parseReply = JSON.parse(reply);
+			for(var i = 0 ; i < parseReply.length ; i ++) { 
+				if(parseReply[i].id == id) {
+					_result.reply = parseReply[i];
+					_result.resCode = "success";
+					resolve();
 				}
 			}			
-
 		})
 	}).then(function(){
 		res.send(_result);
@@ -168,5 +168,43 @@ router.post('/api/calendar/getValueById',function(req,res){
 		return;
 	})
 });
+
+router.post('/api/calendar/delete',function(req,res){
+	console.log('/api/calendar/delete');
+
+	var date = req.body.startDate;
+	var id = req.body.id;
+
+	client.hget('calendar',date,function(err,reply){
+		var replyRedis = JSON.parse(reply);
+		for(var i = 0 ; i < replyRedis.length ; i ++) {
+			if(id == replyRedis[i].id){
+				replyRedis.splice(i,1);
+			}
+		}
+		client.hset('calendar',date,JSON.stringify(replyRedis));
+	})
+})
+
+router.post('/api/calendar/update',function(req,res) {
+	console.log('/api/calendar/update');
+	console.log(req.body);
+
+	var date = req.body.dateStart;
+	var id = req.body.id;
+
+	var inputData = req.body;
+
+	client.hget('calendar',date,function(err,reply){
+		var replyRedis = JSON.parse(reply);
+		for(var i = 0 ; i < replyRedis.length ; i ++) {
+			if(id == replyRedis[i].id){
+				replyRedis.splice(i,1);
+			}
+		}
+		replyRedis.push(inputData);
+		client.hset('calendar',date,JSON.stringify(replyRedis));
+	})
+})
 
 module.exports = router;

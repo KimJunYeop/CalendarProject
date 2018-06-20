@@ -29,14 +29,14 @@
         <form id="dialog-form-inner">
             <fieldset>
                 <label for="subject">제목</label>
-                <input type="text" name="subject" id="subject">
+                <input type="text" name="subject" id="subject" required>
             </br>
                 <label for="dateStart">시작</label>
-                <input class="datePickSelect" type="text" name="dateStart" id="dateStart">
+                <input class="datePickSelect" type="text" name="dateStart" id="dateStart" required>
                 <input class="timepicker" type="text" name="dateStartTime" id="dateStartTime">
             </br>
                 <label for="dateEnd">종료</label>
-                <input class="datePickSelect" type="text" name="dateEnd" id="dateEnd">
+                <input class="datePickSelect" type="text" name="dateEnd" id="dateEnd" required>
                 <input class="timepicker" type="text" name="dateEndTime" id="dateEndTime">
             </br>
                 <label for="description">상세내용</label>
@@ -73,5 +73,7 @@
             </div>
         </div>
     </div>
+
+    <button id="test" >hello</button>
 </body>
 </html>
