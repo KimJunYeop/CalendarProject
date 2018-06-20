@@ -282,7 +282,8 @@ function fnGetAppointment(){
 //Calendar에 받은 date를 기반으로 li를 찾아 button을 삽입한다.
 function fnInsertBtn(appointDate,appointSubject,appointEndDate) { 
     var date = appointDate.substr(6,2);
-    var dayOfWeekIndex = parseInt(_dayOfWeekIndex);
+    var dayOfWeekIndex = new Date(_year,_month-1,1).getDay();
+    var dayOfWeekIndex = parseInt(dayOfWeekIndex);
     var liIndex = dayOfWeekIndex + parseInt(date);
     var liWidth = $('#days li').outerWidth();
     var btnWidth = liWidth * (appointEndDate - appointDate + 1);
