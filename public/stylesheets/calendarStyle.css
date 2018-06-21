@@ -75,7 +75,8 @@ body {font-family: Verdana, sans-serif;}
     height : 100px;
     color: #777;
     border-style: solid;
-    border-width: 1px;
+    border-width: 0.3px;
+    border-color: #ddd;
 }
 
 #days li button {

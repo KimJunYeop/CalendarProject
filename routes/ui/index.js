@@ -3,14 +3,6 @@ var router = express.Router();
 var redis = require('redis');
 var client = redis.createClient(6379, "127.0.0.1");
 
-/* GET home page. */
-router.get('/', function (req, res, next) {
-	// client.hset("hash key", "hashtest 1", "some value", redis.print);
-	// client.hset('hash key', 'hashtest 2', 'some Test', redis.print);
-	res.render('index', {
-		title: 'Express'
-	});
-});
 
 router.get('/calendar', function (req, res) {
 	res.render('calendar');
@@ -43,7 +35,6 @@ router.post('/api/calendar', function (req, res) {
 						multiInputData.push(resultArray[i]);
 					}
 					inputData.id = resultArray.length + 1;
-					// multiInputData.push(JSON.parse(result));
 					multiInputData.push(inputData);
 					client.hset('calendar',dateStart,JSON.stringify(multiInputData),function(err,reply){
             if(err) reject(err);
@@ -78,10 +69,6 @@ router.post('/api/calendar/appointment', function (req, res) {
 	var month = req.body.month;
 	var searchKey = year + month;
 
-	var myArray = new Array();
-	// console.log('####');
-	// console.log(typeof myArray);
-
 	new Promise(function (resolve, reject) {
 		client.hkeys("calendar", function (err, replies) {
 			if (err) reject(err)
@@ -90,7 +77,7 @@ router.post('/api/calendar/appointment', function (req, res) {
 					if (err) reject(err)
 					var parseResult = JSON.parse(result);
 					parseResult.dateStart = reply;
-					//result에 hashkey값 추가
+					// result에 hashkey값 추가
 					// parseResult.subject = reply;
 					if (parseResult.dateStart.substr(0, 6) == searchKey) {
 						_result.appointment.push(parseResult);
@@ -169,6 +156,7 @@ router.post('/api/calendar/getValueById',function(req,res){
 	})
 });
 
+// id를 이용한 delete
 router.post('/api/calendar/delete',function(req,res){
 	console.log('/api/calendar/delete');
 
@@ -186,18 +174,21 @@ router.post('/api/calendar/delete',function(req,res){
 	})
 })
 
+// id를 이용한 update
 router.post('/api/calendar/update',function(req,res) {
 	console.log('/api/calendar/update');
+	console.log('###');
 	console.log(req.body);
-
 	var date = req.body.dateStart;
-	var id = req.body.id;
-
+	var id = parseInt(req.body.id);
+	req.body.id = parseInt(req.body.id);
 	var inputData = req.body;
 
 	client.hget('calendar',date,function(err,reply){
 		var replyRedis = JSON.parse(reply);
 		for(var i = 0 ; i < replyRedis.length ; i ++) {
+			console.log('$$$');
+			console.log(typeof replyRedis[i].id);
 			if(id == replyRedis[i].id){
 				replyRedis.splice(i,1);
 			}
