@@ -155,12 +155,14 @@ function bind() {
     })
 
     $(".draggable").draggable({
-        snap: "li",
-        helper: "clone",
-        revert: "valid"
+        helper: "clone"
     });
 
     $(".droppable").droppable({
+        accept: '.draggable',
+        classes: {
+            "ui-droppable-hover": "ui-state-highlight"
+          },
         drop: function (event, ui) {
             var monthValue = fnLeadingZeros(_month, 2).toString();
             var dayOfWeekIndex = new Date(_year, _month - 1, 1).getDay();
@@ -174,6 +176,19 @@ function bind() {
         }
     });
 
+    $( "#draggable" ).draggable();
+    $( "#droppable").droppable({
+        classes: {
+            "ui-droppable-hover": "ui-state-hover"
+        },
+        drop: function( event, ui ) {
+        $( this )
+            .addClass( "ui-state-highlight" )
+            .find( "p" )
+            .html( "Dropped!" );
+        }
+    })
+
     $('#days button').unbind('click').bind('click',function(){
         alert('button clicked!');
     })
@@ -182,6 +197,8 @@ function bind() {
         event.preventDefault();
         fnAjaxPost();
     });
+    
+    
 }
 
 //dayOfWeek 0 = 일요일 6 = 토요일
@@ -190,9 +207,9 @@ function fnDaysPrint(input_month) {
     $("#days").html(function () {
         var str = fnGetFirstDay();
         for (var i = 1; i < _monthdays[input_month - 1] + 1; i++) {
-            //active 
+            //TODO :: days span class 정의해야함.
             if (i == _day && (input_month == (_month + 1)) && (_year == _d.getFullYear())) {
-                str += '<li class="droppable"><span class="active">' + i + '</span></li>';
+                str += '<li class="droppable "><span class="active">' + i + '</span></li>';
             } else {
                 str += '<li class="droppable"><p>' + i + '</p></li>'
             }
@@ -374,27 +391,27 @@ function fnDialogInit(dateValue) {
 //data가있다면 출력 없다면 없음메세지 출력
 function fnTableInit(resCode, replyData) {
     var insertButton = '<button>추가</button>';
+    var str = '';
+    str += insertButton;
     if (resCode == 'empty') {
-        var str = insertButton +
-            "<p>데이터가 없습니다.</p>" +
-            "<p>data를 추가해주세요!</p>";
+        str += "<p>데이터가 없습니다.</p>" +
+               "<p>data를 추가해주세요!</p>";
         $("#dialog-list").html(str);
     } else if (resCode == 'success') {
-        var str = insertButton + '<table>' +
-            '<tr>' +
-            '<th>일정이름</th>' +
-            '<th>시작일자</th>' +
-            '<th>종료일자</th>' +
-            '</tr>';
+        str += '<table>' +
+                '<tr>' +
+                '<th>일정이름</th>' +
+                '<th>시작일자</th>' +
+                '<th>종료일자</th>' +
+                '</tr>';
         var myArray = new Array();
         myArray = JSON.parse(replyData);
         _detailData = myArray;
         for (var i = 0; i < myArray.length; i++) {
-            str += '<tr>'
+            str += '<tr data-id='+JSON.stringify(myArray[i].id)+' data-date='+myArray[i].dateStart+'>';
             str += '<td>' + myArray[i].subject + '</td>'
             str += '<td>' + myArray[i].dateStart + '</td>'
             str += '<td>' + myArray[i].dateEnd + '</td>'
-            str += "<td style='display:none'>" + JSON.stringify(myArray[i].id) + "</td>"
             str += '</tr>'
         }
         str += '</table>';
@@ -409,9 +426,10 @@ function insertafterbind() {
         _dialog.dialog("open");
     })
 
-    $('#dialog-list td').unbind("click").bind("click", function () {
-        var id = $(this).siblings()[2].innerHTML;
-        var date = $(this).parent()["0"].childNodes[1].innerHTML;
+    $('#dialog-list tr').unbind("click").bind("click", function () {
+        var id = $(this).attr('data-id');
+        var date = $(this).attr('data-date');
+        console.log(id,date);
 
         fnGetValueUsingId(date, id);
     });
@@ -505,10 +523,11 @@ function fnUpdateAppointment() {
         dateStart: $('#detailDateStart').attr('value'),
         dateEnd: $('#detailDateEnd').attr('value'),
         dateStartTime: $('#detailDateStartTime').attr('value'),
-        dateEndTime: $('#detailDateEndTime').attr('value')
+        dateEndTime: $('#detailDateEndTime').attr('value'),
+        id : _id
     };
     console.log(data);
-
+    // TODO :: 이 로직 구현해야함.
     $.ajax({
         url: '/api/calendar/update',
         type: "post",
