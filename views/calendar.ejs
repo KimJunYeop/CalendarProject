@@ -27,26 +27,7 @@
 </head>
 
 <body>
-    <div id="dialog-form" title="새로운 일정을 등록하세요.">
-        <form id="dialog-form-inner">
-            <fieldset>
-                <label for="subject">제목</label>
-                <input type="text" name="subject" id="subject" required>
-            </br>
-                <label for="dateStart">시작</label>
-                <input class="datePickSelect" type="text" name="dateStart" id="dateStart" required>
-                <input class="timepicker" type="text" name="dateStartTime" id="dateStartTime">
-            </br>
-                <label for="dateEnd">종료</label>
-                <input class="datePickSelect" type="text" name="dateEnd" id="dateEnd" required>
-                <input class="timepicker" type="text" name="dateEndTime" id="dateEndTime">
-            </br>
-                <label for="description">상세내용</label>
-                <textarea name="description" id="description" ></textarea>
-                <!-- Allow form submission with keyboard without duplicating the dialog button -->
-                <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
-            </fieldset>
-        </form>
+    <div id="dialog-insert-form" title="새로운 일정을 등록하세요.">
     </div>
     <div id="dialog-list" title="일정 목록">
     </div>
@@ -77,16 +58,5 @@
         </div>
     </div>
 
-    <div class="w3-right">
-        <button id="opener">open the dialog</button>
-        <div id="dialog" title="Dialog Title">I'm a dialog</div>
-    </div>
-
-    <script>
-    $( "#dialog" ).dialog({ autoOpen: false });
-    $( "#opener" ).click(function() {
-        $( "#dialog" ).dialog( "open" );
-    });
-    </script>
 </body>
 </html>

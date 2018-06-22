@@ -45,7 +45,6 @@ function dialoginit() {
                 $('#dialog-list').dialog('close');
             },
             수정: function () {
-                console.log('update');
                 fnUpdateAppointment();
                 init();
                 $(this).dialog('close');
@@ -55,13 +54,13 @@ function dialoginit() {
     });
 
     //dialog Input form
-    _dialog = $("#dialog-form").dialog({
+    _dialog = $("#dialog-insert-form").dialog({
         autoOpen: false,
         height: 400,
         width: 350,
         buttons: {
             OK: function () {
-                var dateValue = $('#dateStart').val();
+                var dateValue = $('#insertDateStart').val();
                 fnAjaxPost();
                 //table init 실행.
                 fnDialogInit(dateValue);
@@ -73,13 +72,33 @@ function dialoginit() {
             }
         }
     });
-
+    fnInsertFormInit();
     //일정 List 
     _dialogList = $("#dialog-list").dialog({
         autoOpen: false,
         height: 400,
         width: 500
     });
+
+}
+
+function fnInsertFormInit(){
+    var html = '';
+    html += '<label for="subject">제목</label>';
+    html += '<input type="text" name="subject" id="insertSubject" required>';
+    html += '</br>';
+    html +=    '<label for="dateStart">시작</label>';
+    html +=    '<input class="datePickSelect" type="text" id="insertDateStart" required>';
+    html +=    '<input class="timepicker" type="text"  id="insertDateStartTime">';
+    html += '</br>';
+    html +=    '<label for="dateEnd">종료</label>';
+    html +=    '<input class="datePickSelect" type="text" id="insertDateEnd" required>';
+    html +=    '<input class="timepicker" type="text" id="insertDateEndTime">';
+    html += '</br>';
+    html +=    '<label for="description">상세내용</label>'
+    html +=   '<textarea id="insertDescription" ></textarea>'
+
+    $('#dialog-insert-form').html(html);
 }
 
 function calendarinit() {
@@ -112,6 +131,11 @@ function calendarinit() {
         scrollbar: true,
         zindex: 2000
     });
+
+    fndatefickerinit();
+}
+
+function fndatefickerinit(){
 
     $(".datePickSelect").datepicker();
     $(".datePickSelect").datepicker("option", "dateFormat", "yymmdd");
@@ -147,6 +171,7 @@ function bind() {
         var daysValue = fnLeadingZeros(($(this).index() - (dayOfWeekIndex - 1)), 2).toString();
         var dateValue = _year + monthValue + daysValue;
 
+        _startDate = dateValue;
         $('#dateStart').val(dateValue);
         $('#dateEnd').val(dateValue);
 
@@ -162,16 +187,16 @@ function bind() {
         accept: '.draggable',
         classes: {
             "ui-droppable-hover": "ui-state-highlight"
-          },
+        },
         drop: function (event, ui) {
             var monthValue = fnLeadingZeros(_month, 2).toString();
             var dayOfWeekIndex = new Date(_year, _month - 1, 1).getDay();
             var daysValue = fnLeadingZeros(($(this).index() - (dayOfWeekIndex - 1)), 2).toString();
             var dateValue = _year + monthValue + daysValue;
-            $('#dateStart').val(dateValue);
-            $('#dateEnd').val(dateValue);
-            $('#subject').val(ui.draggable[0].textContent);
-            $('#decription').val(ui.draggable[0].textContent);
+            $('#insertDateStart').val(dateValue);
+            $('#insertDateEnd').val(dateValue);
+            $('#insertSubject').val(ui.draggable[0].textContent);
+            $('#insertDecription').val(ui.draggable[0].textContent);
             fnAjaxPost();
         }
     });
@@ -184,8 +209,6 @@ function bind() {
         drop: function( event, ui ) {
         $( this )
             .addClass( "ui-state-highlight" )
-            .find( "p" )
-            .html( "Dropped!" );
         }
     })
 
@@ -204,6 +227,9 @@ function bind() {
 //dayOfWeek 0 = 일요일 6 = 토요일
 function fnDaysPrint(input_month) {
     fnGetAppointment();
+    var monthValue = fnLeadingZeros(_month, 2).toString();
+    var fullDays = _year + monthValue;;
+    console.log(fullDays);
     $("#days").html(function () {
         var str = fnGetFirstDay();
         for (var i = 1; i < _monthdays[input_month - 1] + 1; i++) {
@@ -211,7 +237,7 @@ function fnDaysPrint(input_month) {
             if (i == _day && (input_month == (_month + 1)) && (_year == _d.getFullYear())) {
                 str += '<li class="droppable "><span class="active">' + i + '</span></li>';
             } else {
-                str += '<li class="droppable"><p>' + i + '</p></li>'
+                str += '<li class="droppable" data-date="'+(fullDays+fnLeadingZeros(i,2))+'"><p>' + i + '</p></li>'
             }
         }
         return str;
@@ -228,22 +254,6 @@ function fnGetFirstDay() {
     return result;
 }
 
-//ul days 일정 가져오기
-function fnAjaxPost() {
-    var data = $("#dialog-form form").serializeArray();
-    $.ajax({
-        url: "/api/calendar",
-        data: data,
-        type: "post",
-        success: function (result) {
-            init();
-        },
-        error: function (err) {
-            console.log(err);
-        }
-    });
-}
-
 /*
  * 자릿수 맞춰주기
  */
@@ -257,6 +267,32 @@ function fnLeadingZeros(n, digits) {
     }
     return zero + n;
 }
+
+
+//ul days 일정 가져오기
+function fnAjaxPost() {
+    //TODO :: 여기해야한다.
+    var data = {
+        subject: $('#insertSubject').val(),
+        dateStart: $('#insertDateStart').val(),
+        dateStartTime: $('#insertDateStartTime').val(),
+        dateEnd: $('#insertDateEnd').val(),
+        dateEndTime: $('#insertDateEndTime').val(),
+        description: $('#insertDescription').val()
+    }
+    $.ajax({
+        url: "/api/calendar",
+        data: data,
+        type: "post",
+        success: function (result) {
+            init();
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
+}
+
 
 function fnGetAppointment() {
     var monthValue = fnLeadingZeros(_month, 2).toString();
@@ -277,7 +313,7 @@ function fnGetAppointment() {
                     var appointDate = result.appointment[j][i].dateStart;
                     var appointSubject = result.appointment[j][i].subject;
                     var appointEndDate = result.appointment[j][i].dateEnd;
-                    fnInsertBtn(appointDate, appointSubject, appointEndDate);
+                    fnInsertSpan(appointDate, appointSubject, appointEndDate);
                 }
             }
         },
@@ -285,193 +321,6 @@ function fnGetAppointment() {
             console.log(err);
         }
     });
-}
-
-//Calendar에 받은 date를 기반으로 li를 찾아 button을 삽입한다.
-function fnInsertBtn(appointDate, appointSubject, appointEndDate) {
-    var date = appointDate.substr(6, 2);
-    //enddate 뒤에 두자리 날짜
-    var enddate = appointEndDate.substr(6,2);
-    var dayOfWeekIndex = new Date(_year, _month - 1, 1).getDay();
-    dayOfWeekIndex = parseInt(dayOfWeekIndex);
-    //startDate의 liIndex
-    var liIndex = dayOfWeekIndex + parseInt(date);
-    // console.log('liIndex : ' + liIndex);
-    var liWidth = $('#days li').outerWidth();
-    //endDatedml li Index
-    var endDayIndex = dayOfWeekIndex + parseInt(enddate);
-    // console.log('endDayIndex : ' + endDayIndex);
-    var btnWidth = liWidth * (appointEndDate - appointDate + 1);
-    var html = '';
-    var _saturdayIndex;
-    var btnWidthNext;
-    var htmlNext = '';
-    var overSaturday = fnGetSaturday(appointDate, appointEndDate, liIndex, function(saturdayIndex){
-        // console.log('callback saturday index : ' + saturdayIndex);
-        _saturdayIndex = saturdayIndex;
-    });
-    
-
-    if (appointSubject == '회의') {
-        html += '<button class="w3-pink" style="width: '
-    } else if (appointSubject == '출장') {
-        html += '<button class="w3-indigo" style="width: '
-    } else if (appointSubject == '연차') {
-        html += '<button class="w3-blue-grey" style="width: '
-    } else if (appointSubject == '계약') {
-        html += '<button class="w3-deep-orange" style="width: '
-    } else if (appointSubject == '교육') {
-        html += '<button class="w3-purple" style="width: '
-    } else {
-        html += '<button class="w3-green" style="width: '
-    }
-
-    if(overSaturday == 'over') {
-        //토요일 index 에서 시작 index를 뺸 값으로 width 측정.
-        btnWidth = liWidth * (_saturdayIndex - liIndex + 1);
-        btnWidthNext = liWidth * ((endDayIndex - (_saturdayIndex+1))+1)
-        htmlNext += html;
-        htmlNext += btnWidthNext + 'px;">' + appointSubject + '</button>';
-        $("#days li:nth-child(" + (_saturdayIndex+1) + ")").append(htmlNext);
-    }
-
-    html += btnWidth + 'px;">' + appointSubject + '</button>';
-    $("#days li:nth-child(" + liIndex + ")").append(html);
-}
-
-//클릭한 날의 토요일 index구하기
-function fnGetSaturday(appointDate, appointEndDate, liIndex, fnGetSaturdayIndex) {
-    var saturdayIndex;
-
-    var result = 'notOver';
-
-    if (liIndex <= 7) {
-        saturdayIndex = 7;
-    } else if (liIndex > 7 && liIndex <= 14) {
-        saturdayIndex = 14;
-    } else if (liIndex > 14 && liIndex <= 21) {
-        saturdayIndex = 21;
-    } else if (liIndex > 21 && liIndex <= 28) {
-        saturdayIndex = 28;
-    } else if (liIndex > 28 && liIndex <= 35) {
-        saturdayIndex = 35;
-    } else {}
-
-    // callback 함수
-    fnGetSaturdayIndex(saturdayIndex);
-    if ((appointEndDate - appointDate) > (saturdayIndex - liIndex)) {
-        console.log('주를 넘겨!');
-        result = 'over'
-    } else {
-        result = 'notOver'
-    }
-
-    return result;
-}
-
-//startDate에 따라서 data를 가져온다.
-function fnDialogInit(dateValue) {
-    var data = {
-        "startDate": dateValue
-    };
-
-    $.ajax({
-        url: '/api/calendar/specificDate',
-        type: "post",
-        data: data,
-        success: function (result) {
-            fnTableInit(result.resCode, result.replyData);
-        },
-        error: function (err) {
-            console.log(err);
-        }
-    });
-}
-
-//data가있다면 출력 없다면 없음메세지 출력
-function fnTableInit(resCode, replyData) {
-    var insertButton = '<button>추가</button>';
-    var str = '';
-    str += insertButton;
-    if (resCode == 'empty') {
-        str += "<p>데이터가 없습니다.</p>" +
-               "<p>data를 추가해주세요!</p>";
-        $("#dialog-list").html(str);
-    } else if (resCode == 'success') {
-        str += '<table>' +
-                '<tr>' +
-                '<th>일정이름</th>' +
-                '<th>시작일자</th>' +
-                '<th>종료일자</th>' +
-                '</tr>';
-        var myArray = new Array();
-        myArray = JSON.parse(replyData);
-        _detailData = myArray;
-        for (var i = 0; i < myArray.length; i++) {
-            str += '<tr data-id='+JSON.stringify(myArray[i].id)+' data-date='+myArray[i].dateStart+'>';
-            str += '<td>' + myArray[i].subject + '</td>'
-            str += '<td>' + myArray[i].dateStart + '</td>'
-            str += '<td>' + myArray[i].dateEnd + '</td>'
-            str += '</tr>'
-        }
-        str += '</table>';
-        $("#dialog-list").html(str);
-    } else {};
-    insertafterbind();
-}
-
-//insert이후 bind.
-function insertafterbind() {
-    $("#dialog-list button").unbind("click").bind("click", function () {
-        _dialog.dialog("open");
-    })
-
-    $('#dialog-list tr').unbind("click").bind("click", function () {
-        var id = $(this).attr('data-id');
-        var date = $(this).attr('data-date');
-        console.log(id,date);
-
-        fnGetValueUsingId(date, id);
-    });
-}
-
-
-//상세내용 html
-function setDetailDialog(detailData) {
-    var html = "";
-    html += "<br><label>일정 제목</label>"
-    html += "<input class='w3-input' type='text' id='detailSubject' value=" + detailData.subject + ">";
-
-    html += "<div class='w3-row'>";
-    html += "<div class='w3-col m5'>";
-    html += "<br><label>시작 일자</label>"
-    html += "<input class='w3-input datePickSelect' type='text' id='detailDateStart' attr=" + detailData.id + " value=" + detailData.dateStart + ">";
-    html += "</div>";
-    html += "<div class='w3-col m5 w3-right'>";
-    html += "<br><label>종료 일자</label>"
-    html += "<input class='w3-input datePickSelect' type='text' id='detailDateEnd' value=" + detailData.dateEnd + ">";
-    html += "</div>"
-    html += "</div>"
-
-    html += "<div class='w3-row'>";
-    html += "<div class='w3-col m5'>";
-    html += "<br><label>시작 시간</label>"
-    html += "<input class='w3-input' type='text' id='detailDateStartTime' value=" + detailData.dateStartTime + ">";
-    html += "</div>";
-    html += "<div class='w3-col m5 w3-right'>";
-    html += "<br><label>종료 시간</label>"
-    html += "<input class='w3-input' type='text' id='detailDateEndTime' value=" + detailData.dateEndTime + ">";
-    html += "</div>"
-    html += "</div>"
-
-    html += "<br><label>상세 내용</label>"
-    html += "<p><textarea class='w3-input' id='detailDescription'>" + detailData.description + "</textarea></p>";
-
-    _startDate = detailData.dateStart;
-    _id = detailData.id;
-
-    $('#dialog-detail').html(html);
-    _dialogDetail.dialog("open");
 }
 
 
@@ -516,18 +365,39 @@ function fnDeleteAppointment() {
     });
 }
 
+
+//startDate에 따라서 data를 가져온다.
+function fnDialogInit(dateValue) {
+    var data = {
+        "startDate": dateValue
+    };
+
+    $.ajax({
+        url: '/api/calendar/specificDate',
+        type: "post",
+        data: data,
+        success: function (result) {
+            fnTableInit(result.resCode, result.replyData);
+            console.log('fnDialogInit data');
+            console.log(result);
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
+}
+
 //id를 이용해서 일정을 수정한다.
 function fnUpdateAppointment() {
     var data = {
-        subject: $('#detailSubject').attr('value'),
-        dateStart: $('#detailDateStart').attr('value'),
-        dateEnd: $('#detailDateEnd').attr('value'),
-        dateStartTime: $('#detailDateStartTime').attr('value'),
-        dateEndTime: $('#detailDateEndTime').attr('value'),
+        subject: $('#detailSubject').val(),
+        dateStart: $('#detailDateStart').val(),
+        dateEnd: $('#detailDateEnd').val(),
+        dateStartTime: $('#detailDateStartTime').val(),
+        dateEndTime: $('#detailDateEndTime').val(),
+        description: $('#detailDescription').val(),
         id : _id
     };
-    console.log(data);
-    // TODO :: 이 로직 구현해야함.
     $.ajax({
         url: '/api/calendar/update',
         type: "post",
@@ -537,3 +407,173 @@ function fnUpdateAppointment() {
         }
     });
 }
+
+
+//Calendar에 받은 date를 기반으로 li를 찾아 button을 삽입한다.
+function fnInsertSpan(appointDate, appointSubject, appointEndDate) {
+    var date = appointDate.substr(6, 2);
+    //enddate 뒤에 두자리 날짜
+
+    var enddate = appointEndDate.substr(6,2);
+    var number = new Array();
+
+    for(var i = parseInt(date) ; i <= enddate ; i++) {
+        number.push(i);
+    }
+
+    var dayOfWeekIndex = new Date(_year, _month - 1, 1).getDay();
+    dayOfWeekIndex = parseInt(dayOfWeekIndex);
+    //startDate의 liIndex
+    var liIndex = dayOfWeekIndex + parseInt(date);
+    // console.log('liIndex : ' + liIndex);
+    var liWidth = $('#days li').outerWidth();
+    // console.log('endDayIndex : ' + endDayIndex);
+    var btnWidth = liWidth;
+    var html = '';
+
+    if (appointSubject == '회의') {
+        html += '<span class="w3-pink" style="width: '
+    } else if (appointSubject == '출장') {
+        html += '<span class="w3-indigo" style="width: '
+    } else if (appointSubject == '연차') {
+        html += '<span class="w3-blue-grey" style="width: '
+    } else if (appointSubject == '계약') {
+        html += '<span class="w3-deep-orange" style="width: '
+    } else if (appointSubject == '교육') {
+        html += '<span class="w3-purple" style="width: '
+    } else {
+        html += '<span class="w3-green" style="width: '
+    }
+
+    html += btnWidth + 'px;">' + appointSubject + '</span>';
+    // for(var i = liIndex ; number.length ;)
+    for(var i = 0 ; i < number.length ; i++) {
+        $("#days li:nth-child(" + (liIndex + i) + ")").append(html);
+    }
+    // $("#days li:nth-child(" + liIndex + ")").append(html);
+}
+
+//클릭한 날의 토요일 index구하기
+function fnGetSaturday(appointDate, appointEndDate, liIndex, fnGetSaturdayIndex) {
+    var saturdayIndex;
+    var result = 'notOver';
+
+    if (liIndex <= 7) {
+        saturdayIndex = 7;
+    } else if (liIndex > 7 && liIndex <= 14) {
+        saturdayIndex = 14;
+    } else if (liIndex > 14 && liIndex <= 21) {
+        saturdayIndex = 21;
+    } else if (liIndex > 21 && liIndex <= 28) {
+        saturdayIndex = 28;
+    } else if (liIndex > 28 && liIndex <= 35) {
+        saturdayIndex = 35;
+    } else {}
+
+    // callback 함수
+    fnGetSaturdayIndex(saturdayIndex);
+    if ((appointEndDate - appointDate) > (saturdayIndex - liIndex)) {
+        result = 'over'
+    } else {
+        result = 'notOver'
+    }
+
+    return result;
+}
+
+
+//data가있다면 출력 없다면 없음메세지 출력
+function fnTableInit(resCode, replyData) {
+    var insertButton = '<button id="insertBtn">추가</button>';
+    var str = '';
+    str += insertButton;
+    if (resCode == 'empty') {
+        str += "<p>데이터가 없습니다.</p>" +
+               "<p>data를 추가해주세요!</p>";
+        $("#dialog-list").html(str);
+    } else if (resCode == 'success') {
+        str += '<table>' +
+                '<tr>' +
+                '<th>일정이름</th>' +
+                '<th>시작일자</th>' +
+                '<th>종료일자</th>' +
+                '</tr>';
+        var myArray = new Array();
+        myArray = JSON.parse(replyData);
+        _detailData = myArray;
+        for (var i = 0; i < myArray.length; i++) {
+            str += '<tr data-id='+JSON.stringify(myArray[i].id)+' data-date='+myArray[i].dateStart+'>';
+            str += '<td>' + myArray[i].subject + '</td>'
+            str += '<td>' + myArray[i].dateStart + '</td>'
+            str += '<td>' + myArray[i].dateEnd + '</td>'
+            str += '</tr>'
+        }
+        str += '</table>';
+        $("#dialog-list").html(str);
+    } else {};
+    insertafterbind();
+}
+
+//insert이후 bind.
+function insertafterbind() {
+    $("#insertBtn").unbind("click").bind("click", function () {
+        fndatefickerinit();
+        $('#insertDateStart').val(_startDate);
+        $('#insertDateEnd').val(_startDate);
+        $('#insertDateStartTime').val('16:00');
+        $('#insertDateEndTime').val('17:00');
+        
+        _dialog.dialog("open");
+    })
+
+    $('#dialog-list tr').unbind("click").bind("click", function () {
+        var id = $(this).attr('data-id');
+        var date = $(this).attr('data-date');
+
+        fnGetValueUsingId(date, id);
+    });
+}
+
+
+//상세내용 html
+function setDetailDialog(detailData) {
+    var html = "";
+    html += "<br><label>일정 제목</label>"
+    html += "<input class='w3-input' type='text' id='detailSubject' value=" + detailData.subject + ">";
+
+    html += "<div class='w3-row'>";
+    html += "<div class='w3-col m5'>";
+    html += "<br><label>시작 일자</label>"
+    html += "<input class='w3-input datePickSelect' type='text' id='detailDateStart'>";
+    html += "</div>";
+    html += "<div class='w3-col m5 w3-right'>";
+    html += "<br><label>종료 일자</label>"
+    html += "<input class='w3-input datePickSelect' type='text' id='detailDateEnd'>";
+    html += "</div>"
+    html += "</div>"
+
+    html += "<div class='w3-row'>";
+    html += "<div class='w3-col m5'>";
+    html += "<br><label>시작 시간</label>"
+    html += "<input class='w3-input' type='text' id='detailDateStartTime' value=" + detailData.dateStartTime + ">";
+    html += "</div>";
+    html += "<div class='w3-col m5 w3-right'>";
+    html += "<br><label>종료 시간</label>"
+    html += "<input class='w3-input' type='text' id='detailDateEndTime' value=" + detailData.dateEndTime + ">";
+    html += "</div>"
+    html += "</div>"
+
+    html += "<br><label>상세 내용</label>"
+    html += "<p><textarea class='w3-input' id='detailDescription'>" + detailData.description + "</textarea></p>";
+
+    _startDate = detailData.dateStart;
+    _id = detailData.id;
+
+    $('#dialog-detail').html(html);
+    fndatefickerinit();
+    $('#detailDateStart').val(detailData.dateStart);
+    $('#detailDateEnd').val(detailData.dateEnd);
+    
+    _dialogDetail.dialog("open");
+}
+

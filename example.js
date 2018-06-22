@@ -1,7 +1,11 @@
-
-
-for(var i = 0 ; i < 1 ; i ++) {
-    for(var j = 0 ; j < 1 ; j ++) {
-        console.log('hello');
-    }
-}
+new Promise(function(resolve,reject){
+    setTimeout(()=>resolve(1),1000);
+}).then(function(result){
+    console.log('1');
+    return;
+}).then(function(){
+    console.log('2');
+    return 'finished';
+}).then(function(result){
+    console.log(result);
+})

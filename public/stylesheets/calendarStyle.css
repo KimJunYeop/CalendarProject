@@ -63,15 +63,25 @@ body {font-family: Verdana, sans-serif;}
     padding: 10px 0;
     background: #eee;
     margin: 0;
+    height: 100%;
+    font-size:0;
+    letter-spacing: -5px;
+}
+
+#days p {
+    text-align: center;
+    /* margin-bottom: 5px; */
+    font-size:10px;
+    color: #777;
 }
 
 #days li {
-    list-style-type: none;
     display: inline-block;
     width: 13.6%;
-    text-align: center;
-    margin-bottom: 5px;
+    text-align: left;
     font-size:13px;
+    letter-spacing: 0px;
+    vertical-align: top;
     height : 100px;
     color: #777;
     border-style: solid;
@@ -114,4 +124,8 @@ td, th {
 
 tr:nth-child(even) {
     background-color: #dddddd;
+}
+
+span {
+    display: block;
 }
