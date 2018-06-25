@@ -106,22 +106,6 @@ router.post('/api/calendar/appointment', function (req, res) {
 		console.log(err);
 		return;
 	});
-
-
-	// var _replies = function() {
-	// 	return new Promise(function(resolve,reject){
-	// 		client.hkeys('calendar',function(err,replies) {
-	// 			if(replies) resolve(replies);
-	// 			else reject();
-	// 		});
-	// 	});
-	// }
-	// _replies().then(function(replies) { 
-	// 	console.log(replies);
-	// }).catch(function(error){
-	// 	console.log(error);
-	// });
-
 });
 
 //특정날짜 data조회
@@ -129,22 +113,64 @@ router.post('/api/calendar/specificDate', function (req, res) {
 	console.log('/api/calendar/specificDate');
 	var dateValue = req.body.startDate;
 	var _result = {
-		resCode: "false"
+		resCode: "false",
+		resId: 0,
+		resDate : []
 	}
 
+	var resultArray = new Array();
+
+	var resultJSON = {};
+
 	new Promise(function (resolve, reject) {
-		client.hget('calendar', dateValue, function (err, reply) {
-			if (err) reject(err);
-			if (reply == null) {
-				_result.resCode = "empty";
-			} else {
-				_result.resCode = "success";
-				_result.replyData = reply;
-			}
-			resolve();
-		});
-	}).then(function () {
-		res.send(_result);
+		client.hgetall('calendar', function(err, reply) {
+			var a = Object.keys(reply);
+			a.forEach(function(inner,i) {
+				// i :index  reply : 값 
+				var innerResult = JSON.parse(reply[inner]);
+				var arr = new Array();
+				innerResult.forEach(function(inner2,j){
+					var inner2Json = {
+						days : "" , 
+						id : 0
+					};
+					getMiddleDays2(inner2.dateStart,inner2.dateEnd,dateValue,inner2.id,function(resultDay,resultId){
+						var resultValue = {
+							"resultDay" : resultDay,
+							"resultId" : resultId
+						}
+						resultArray.push(resultValue); 
+					});
+
+					inner2Json.days =  getMiddleDays(inner2.dateStart,inner2.dateEnd);
+					inner2Json.id = inner2.id;
+					arr.push(inner2Json);
+					// resultArray.push(inner2JSON);
+					resultJSON[inner] = arr;
+				});
+				// console.log('=== result aRray  ====');
+				// console.log(resultArray);
+			})
+			console.log('Result!!!!!#####');
+			console.log(resultArray);
+			resolve(resultJSON);
+		})
+		// client.hget('calendar',  function (err, reply) {
+		// 	console.log('###');
+		// 	console.log(reply);
+		// 	if (err) reject(err);
+		// 	if (reply == null) {
+		// 		_result.resCode = "empty";
+		// 	} else {
+		// 		_result.resCode = "success";
+		// 		_result.replyData = reply;
+		// 	}
+		// 	resolve();
+		// });
+	}).then(function (resultJSON) {
+		console.log('####');
+		console.log(resultJSON);
+		// res.send(_result);
 	}).catch(function (err) {
 		console.log(err);
 		return;
@@ -152,6 +178,23 @@ router.post('/api/calendar/specificDate', function (req, res) {
 
 	console.log(req.body);
 });
+
+function getMiddleDays(dateStart, dateEnd){
+	console.log(dateStart, dateEnd);
+	var result = new Array();
+	for(var i = dateStart ; i <= dateEnd ; i++) {
+		result.push(i);
+	}
+	return result;
+}
+
+function getMiddleDays2(dateStart,dateEnd,dateValue,dateId,getresult) {
+	for(var i = dateStart; i <= dateEnd ; i++) {
+		if(i == dateValue) {
+			getresult(dateStart,dateId);
+		}
+	}
+}
 
 //id를 이용한 특정 data 도출
 router.post('/api/calendar/getValueById', function (req, res) {
