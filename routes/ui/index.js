@@ -114,13 +114,10 @@ router.post('/api/calendar/specificDate', function (req, res) {
 	var dateValue = req.body.startDate;
 	var _result = {
 		resCode: "false",
-		resId: 0,
-		resDate : []
+		resultArray: []
 	}
 
 	var resultArray = new Array();
-
-	var resultJSON = {};
 
 	new Promise(function (resolve, reject) {
 		client.hgetall('calendar', function(err, reply) {
@@ -134,61 +131,28 @@ router.post('/api/calendar/specificDate', function (req, res) {
 						days : "" , 
 						id : 0
 					};
-					getMiddleDays2(inner2.dateStart,inner2.dateEnd,dateValue,inner2.id,function(resultDay,resultId){
+					getMiddleDays(inner2.dateStart,inner2.dateEnd,dateValue,inner2.id,function(resultDay,resultId){
 						var resultValue = {
 							"resultDay" : resultDay,
 							"resultId" : resultId
 						}
 						resultArray.push(resultValue); 
 					});
-
-					inner2Json.days =  getMiddleDays(inner2.dateStart,inner2.dateEnd);
-					inner2Json.id = inner2.id;
-					arr.push(inner2Json);
-					// resultArray.push(inner2JSON);
-					resultJSON[inner] = arr;
 				});
-				// console.log('=== result aRray  ====');
-				// console.log(resultArray);
 			})
-			console.log('Result!!!!!#####');
-			console.log(resultArray);
-			resolve(resultJSON);
+			_result.resultArray = resultArray;
+			resolve();
 		})
-		// client.hget('calendar',  function (err, reply) {
-		// 	console.log('###');
-		// 	console.log(reply);
-		// 	if (err) reject(err);
-		// 	if (reply == null) {
-		// 		_result.resCode = "empty";
-		// 	} else {
-		// 		_result.resCode = "success";
-		// 		_result.replyData = reply;
-		// 	}
-		// 	resolve();
-		// });
-	}).then(function (resultJSON) {
-		console.log('####');
-		console.log(resultJSON);
-		// res.send(_result);
+	}).then(function () {
+		console.log(resultArray);
+		res.send(_result);
 	}).catch(function (err) {
 		console.log(err);
 		return;
 	})
-
-	console.log(req.body);
 });
 
-function getMiddleDays(dateStart, dateEnd){
-	console.log(dateStart, dateEnd);
-	var result = new Array();
-	for(var i = dateStart ; i <= dateEnd ; i++) {
-		result.push(i);
-	}
-	return result;
-}
-
-function getMiddleDays2(dateStart,dateEnd,dateValue,dateId,getresult) {
+function getMiddleDays(dateStart,dateEnd,dateValue,dateId,getresult) {
 	for(var i = dateStart; i <= dateEnd ; i++) {
 		if(i == dateValue) {
 			getresult(dateStart,dateId);

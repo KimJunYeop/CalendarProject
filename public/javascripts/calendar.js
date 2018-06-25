@@ -184,7 +184,8 @@ function bind() {
     });
 
     //날짜 클릭시 event.
-    $("#days li").unbind("click").bind("click", function () {
+    $("#days li").unbind("click").bind("click", function (event) {
+        event.stopPropagation();
         var dayOfWeekIndex = new Date(_year, _month - 1, 1).getDay();
         var monthValue = fnLeadingZeros(_month, 2).toString();
         var daysValue = fnLeadingZeros(($(this).index() - (dayOfWeekIndex - 1)), 2).toString();
@@ -353,6 +354,25 @@ function fnGetAppointment() {
 }
 
 //ID를 이용해 data를 가져온다
+function fnGetValueList(date, id, returnValue) {
+    var data = {
+        date: date,
+        id: id
+    }
+
+    $.ajax({
+        url: '/api/calendar/getValueById',
+        type: "post",
+        data: data,
+        success: function (result) {
+            returnValue(result.reply);
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
+}
+
 function fnGetValueUsingId(date, id) {
     var data = {
         date: date,
@@ -405,7 +425,7 @@ function fnDialogInit(dateValue) {
         type: "post",
         data: data,
         success: function (result) {
-            fnTableInit(result.resCode, result.replyData);
+            fnTableInit(result.resultArray);
         },
         error: function (err) {
             console.log(err);
@@ -453,8 +473,7 @@ function fnInsertSpan(appointment) {
     // console.log('liIndex : ' + liIndex);
     var liWidth = $('#days li').outerWidth();
     var btnWidth = liWidth;
-    var html = '';
-
+    var html = ''; 
 
     if (appointment.category == '회의') {
         html += '<span class="w3-pink daysappoint" data-date = ' + appointment.dateStart + ' data-id = ' + appointment.id + '  style="width: '
@@ -508,35 +527,64 @@ function fnGetSaturday(appointDate, appointEndDate, liIndex, fnGetSaturdayIndex)
 
 
 //data가있다면 출력 없다면 없음메세지 출력
-function fnTableInit(resCode, replyData) {
+function fnTableInit(resultArray) {
     var insertButton = '<button id="insertBtn">추가</button>';
+
     var str = '';
     str += insertButton;
-    if (resCode == 'empty') {
+
+    if (resultArray.length == 0) {
         str += "<p>데이터가 없습니다.</p>" +
                "<p>data를 추가해주세요!</p>";
         $("#dialog-list").html(str);
-    } else if (resCode == 'success') {
+    } else {
         str += '<table>' +
                 '<tr>' +
                 '<th>일정이름</th>' +
                 '<th>시작일자</th>' +
                 '<th>종료일자</th>' +
                 '</tr>';
-        var myArray = new Array();
-        myArray = JSON.parse(replyData);
-        _detailData = myArray;
-        for (var i = 0; i < myArray.length; i++) {
-            str += '<tr data-id='+JSON.stringify(myArray[i].id)+' data-date='+myArray[i].dateStart+'>';
-            str += '<td>' + myArray[i].subject + '</td>'
-            str += '<td>' + myArray[i].dateStart + '</td>'
-            str += '<td>' + myArray[i].dateEnd + '</td>'
-            str += '</tr>'
-        }
-        str += '</table>';
-        $("#dialog-list").html(str);
-    } else {};
-    insertafterbind();
+
+        new Promise(function(resolve,reject){
+            resultArray.forEach(function(value,index){
+                fnGetValueList(value.resultDay,value.resultId,function(returnValue){
+                    str += '<tr data-id='+returnValue.id+' data-date='+returnValue.dateStart+'>';
+                    str += '<td>' + returnValue.subject + '</td>'
+                    str += '<td>' + returnValue.dateStart + '</td>'
+                    str += '<td>' + returnValue.dateEnd + '</td>'
+                    str += '</tr>'
+                    //TODO :: 이거 왜 되는지 확인해야함.
+                    $("#dialog-list").html(str);
+                    insertafterbind();
+                    resolve();
+                });
+            });
+        }).then(function(){
+            console.log($('#dialog-list'));
+        })
+       
+    } 
+    
+    // else if (resCode == 'success') {
+    //     str += '<table>' +
+    //             '<tr>' +
+    //             '<th>일정이름</th>' +
+    //             '<th>시작일자</th>' +
+    //             '<th>종료일자</th>' +
+    //             '</tr>';
+    //     var myArray = new Array();
+    //     myArray = JSON.parse(replyData);
+    //     _detailData = myArray;
+    //     for (var i = 0; i < myArray.length; i++) {
+    //         str += '<tr data-id='+JSON.stringify(myArray[i].id)+' data-date='+myArray[i].dateStart+'>';
+    //         str += '<td>' + myArray[i].subject + '</td>'
+    //         str += '<td>' + myArray[i].dateStart + '</td>'
+    //         str += '<td>' + myArray[i].dateEnd + '</td>'
+    //         str += '</tr>'
+    //     }
+    //     str += '</table>';
+    //     $("#dialog-list").html(str);
+    // } else {};
 }
 
 //insert이후 bind.
@@ -554,11 +602,8 @@ function insertafterbind() {
     $('#dialog-list tr').unbind("click").bind("click", function () {
         var id = $(this).attr('data-id');
         var date = $(this).attr('data-date');
-
         fnGetValueUsingId(date, id);
     });
-
-
 }
 
 
