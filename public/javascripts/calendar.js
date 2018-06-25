@@ -220,8 +220,14 @@ function bind() {
         event.preventDefault();
         fnAjaxPost();
     });
+
     
-    
+    $('.daysappoint').unbind("click").bind("click", function(event) {
+        // event.preventDefault();
+        event.stopPropagation();
+        alert('this! clicked!');
+    })
+   
 }
 
 //dayOfWeek 0 = 일요일 6 = 토요일
@@ -229,7 +235,6 @@ function fnDaysPrint(input_month) {
     fnGetAppointment();
     var monthValue = fnLeadingZeros(_month, 2).toString();
     var fullDays = _year + monthValue;;
-    console.log(fullDays);
     $("#days").html(function () {
         var str = fnGetFirstDay();
         for (var i = 1; i < _monthdays[input_month - 1] + 1; i++) {
@@ -308,14 +313,18 @@ function fnGetAppointment() {
             if (result.resCode == 'false') {
                 return;
             }
+            console.log(result.appointment);
+
             for (var j = 0; j < result.appointment.length; j++) {
                 for (var i = 0; i < result.appointment[j].length; i++) {
                     var appointDate = result.appointment[j][i].dateStart;
                     var appointSubject = result.appointment[j][i].subject;
                     var appointEndDate = result.appointment[j][i].dateEnd;
-                    fnInsertSpan(appointDate, appointSubject, appointEndDate);
+                    var id = result.appointment[j][i].id
+                    fnInsertSpan(appointDate, appointSubject, appointEndDate, id);
                 }
             }
+            bind();
         },
         error: function (err) {
             console.log(err);
@@ -378,8 +387,6 @@ function fnDialogInit(dateValue) {
         data: data,
         success: function (result) {
             fnTableInit(result.resCode, result.replyData);
-            console.log('fnDialogInit data');
-            console.log(result);
         },
         error: function (err) {
             console.log(err);
@@ -410,7 +417,7 @@ function fnUpdateAppointment() {
 
 
 //Calendar에 받은 date를 기반으로 li를 찾아 button을 삽입한다.
-function fnInsertSpan(appointDate, appointSubject, appointEndDate) {
+function fnInsertSpan(appointDate, appointSubject, appointEndDate, id) {
     var date = appointDate.substr(6, 2);
     //enddate 뒤에 두자리 날짜
 
@@ -430,19 +437,22 @@ function fnInsertSpan(appointDate, appointSubject, appointEndDate) {
     // console.log('endDayIndex : ' + endDayIndex);
     var btnWidth = liWidth;
     var html = '';
+    var str = $('<span style="width:+' + btnWidth + 'px;"+></span>');
+    str.addClass('daysappoint');
+    console.log(str);
 
     if (appointSubject == '회의') {
-        html += '<span class="w3-pink" style="width: '
+        html += '<span class="w3-pink daysappoint" style="width: '
     } else if (appointSubject == '출장') {
-        html += '<span class="w3-indigo" style="width: '
+        html += '<span class="w3-indigo daysappoint" style="width: '
     } else if (appointSubject == '연차') {
-        html += '<span class="w3-blue-grey" style="width: '
+        html += '<span class="w3-blue-grey daysappoint" style="width: '
     } else if (appointSubject == '계약') {
-        html += '<span class="w3-deep-orange" style="width: '
+        html += '<span class="w3-deep-orange daysappoint" style="width: '
     } else if (appointSubject == '교육') {
-        html += '<span class="w3-purple" style="width: '
+        html += '<span class="w3-purple daysappoint" style="width: '
     } else {
-        html += '<span class="w3-green" style="width: '
+        html += '<span class="w3-green daysappoint" style="width: '
     }
 
     html += btnWidth + 'px;">' + appointSubject + '</span>';
@@ -450,7 +460,7 @@ function fnInsertSpan(appointDate, appointSubject, appointEndDate) {
     for(var i = 0 ; i < number.length ; i++) {
         $("#days li:nth-child(" + (liIndex + i) + ")").append(html);
     }
-    // $("#days li:nth-child(" + liIndex + ")").append(html);
+
 }
 
 //클릭한 날의 토요일 index구하기
@@ -532,6 +542,8 @@ function insertafterbind() {
 
         fnGetValueUsingId(date, id);
     });
+
+
 }
 
 
